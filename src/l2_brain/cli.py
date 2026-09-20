@@ -276,6 +276,22 @@ def main(argv: list[str] | None = None) -> int:
 
     add_agent_live_arguments(agent)
 
+    menu = sub.add_parser(
+        "menu-click-debug",
+        help="скан стопки синих HTML-ссылок по кадру; клик только с --go, не R3/R4/R5",
+    )
+    menu.add_argument("--scan", action="store_true", help="только скан, без HID (это же по умолчанию)")
+    menu.add_argument("--go", action="store_true", help="один живой клик по найденному пункту")
+    menu.add_argument("--live", action="store_true")
+    menu.add_argument("--danger-confirmed", action="store_true")
+    menu.add_argument("--window-id", type=int, default=None)
+    menu.add_argument("--target-pid", type=int, default=None)
+    menu.add_argument("--from-png", type=Path, default=None, help="офлайн кадр, только --scan")
+    menu.add_argument("--out", type=Path, default=Path("run/menu-click-debug.json"))
+    menu.add_argument("--overlay", type=Path, default=None, help="диагностический PNG: LEFT_PANEL, стопка, клик")
+    menu.add_argument("--index", type=int, default=0, help="какой пункт стопки жать при --go")
+    menu.add_argument("--profile", type=Path, default=Path("config/window_profiles/parallels_l2.json"))
+
     args = parser.parse_args(argv)
     if args.cmd == "mock":
         return _run_mock(args, record_path=args.record, default_frames="none")
@@ -355,6 +371,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_layout_slots(args)
     if args.cmd == "agent-live":
         return _run_agent_live(args)
+    if args.cmd == "menu-click-debug":
+        return _run_menu_click_debug(args)
     raise AssertionError(args.cmd)
 
 
@@ -1685,6 +1703,47 @@ def _run_vision(args: argparse.Namespace) -> int:
     )
     enc.close()
     return 0
+
+
+def _run_menu_click_debug(args: argparse.Namespace) -> int:
+    from l2_brain.live.menu_click_debug import run_menu_click_debug
+
+    payload = run_menu_click_debug(
+        scan=bool(args.scan) or not bool(args.go),
+        go=bool(args.go),
+        live=bool(args.live),
+        danger_confirmed=bool(args.danger_confirmed),
+        window_id=args.window_id,
+        target_pid=args.target_pid,
+        from_png=args.from_png,
+        out_path=args.out,
+        overlay_path=args.overlay,
+        index=int(args.index),
+    )
+    print(
+        json.dumps(
+            {
+                "out": payload.get("out"),
+                "ok": payload.get("ok"),
+                "mode": payload.get("mode"),
+                "aborted": payload.get("aborted"),
+                "hid_sent": payload.get("hid_sent"),
+                "validation_result": payload.get("validation_result"),
+                "found": (payload.get("stack") or {}).get("found"),
+                "click_xy": payload.get("click_xy"),
+                "default_items": payload.get("default_items"),
+                "menu_changed": payload.get("menu_changed"),
+                "farm": payload.get("farm"),
+                "canon": payload.get("canon"),
+            },
+            ensure_ascii=False,
+        )
+    )
+    if payload.get("aborted") == "live_flags_required":
+        return 2
+    if payload.get("aborted") in {"canon_path_forbidden", "png_not_for_go"}:
+        return 2
+    return 0 if payload.get("ok") else 3
 
 
 def _run_agent_live(args: argparse.Namespace) -> int:
