@@ -1,6 +1,7 @@
 # Архитектура
 
-Снимок на 2026-09-18 (ADR-0085: Task layer v1 unit-only;
+Снимок на 2026-09-20 (ADR-0086: скан стопки меню unit-only;
+ADR-0085: Task layer v1 unit-only;
 ADR-0080: R1/R2 LiveRuntime live-validated. ADR-0079: NPC/spot
 оркеструют LiveRuntime. ADR-0078: каркас).
 Ранее 2026-09-17 (F64, ADR-0062). Источник истины — код в этом
@@ -29,6 +30,7 @@ ADR-0080: R1/R2 LiveRuntime live-validated. ADR-0079: NPC/spot
 | Живой зонд | SCK `Frame` + `HUDParser` + CGEvent | `live.s4_probe`, `s4-npc-dialog`, `bench-h8`, `calibrate-*` | да, только с `--live --danger-confirmed`; не `Circuit.run` |
 | LiveRuntime | `PerceptionHub` → `WorldState` → один `Skill` → CGEvent | `live.runtime.LiveRuntime`; probes оркеструют его | R1/R2 LIVE-VALIDATED; не «agent LIVE-PROVEN» |
 | Task layer v1 | одна `Task` → Skills через Runtime | `live.tasks`; `GuideInteractionTask` | UNIT-TESTED; `LIVE_VALIDATION = NO` |
+| Menu stack scan | синие HTML-ссылки по всему кадру | `vision.menu_stack_scan`; `menu-click-debug` | UNIT-TESTED; не дефолтный парсер; live нет |
 
 Контроллер не захватывает экран, не читает пакеты, не жмёт клавиши и
 не знает раскладку HUD. Настройки игры — в
@@ -171,7 +173,7 @@ src/l2_brain/
   actuators/            протокол; LiveHIDActuator — заглушка (не CGEvent)
   circuit/              Circuit, протоколы, mock I/O, PulseDecoder
   capture/              SCKFrameSource, профили окна, build_sck_circuit
-  vision/               NavigationEncoder, HUDParser, калибровка ROI
+  vision/               NavigationEncoder, HUDParser, калибровка ROI, menu_stack_scan
   calibration/          KLT yaw ±40 px; coarse phase + pixel_diff (Q5 не закрыт)
   control/              BaselineController (заморожен, ADR-0030)
   control/snn/          snn_core_v1 (LIF CPU; не controllers/snn.py)

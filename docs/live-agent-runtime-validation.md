@@ -43,3 +43,4 @@ R1 PASS, R2 PASS по критерию `runtime_validation`.
 Не объявляем `LIVE-PROVEN` на весь агент.
 Task layer v1 есть в коде: `TASK_LAYER_STATUS = UNIT-TESTED`,
 `LIVE_VALIDATION = NO`. Канон R1/R2 не переписывался.
+R3/R4/R5 не создавались (ход 97, скан стопки — unit-only).

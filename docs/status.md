@@ -3,6 +3,30 @@
 Обзор для решения «куда дальше»:
 [overview-2026-09-18.md](overview-2026-09-18.md).
 
+## Ход 97 — скан стопки меню, без live — 2026-09-20
+
+Код и unit-тесты. Live HID не было. Дефолтный `LEFT_PANEL`
+не меняли. R1/R2 и F82/F85/F86 не переписывали. Канон R3/R4/R5
+не писали.
+
+Новый `scan_menu_stack`: синие HTML-ссылки по всему кадру,
+клик `(x0+70, y0-14)` от верха стопки. CLI
+`menu-click-debug --scan` (и `--from-png`) без HID.
+`--go` требует dual flags; PASS только если меню изменилось.
+Синие иконки могут дать ложную стопку. Это не «агент найдёт
+что угодно».
+
+```text
+MENU_STACK_SCAN = UNIT-TESTED
+LIVE_VALIDATION = NO
+TASK_LAYER_STATUS = UNIT-TESTED
+LiveRuntime execution path = LIVE-VALIDATED
+Long-horizon Agent/Task layer = NOT YET LIVE-VALIDATED
+```
+
+Не PASS сдвинутого гида в клиенте. Проверка у оператора:
+сдвинуть окно → `--scan` → «го» / `--go`.
+
 ## Ход 96 — Task layer v1, без live — 2026-09-18
 
 Код и unit-тесты. Live HID не было. F82/F85/F86 и R1/R2 JSON
